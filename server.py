@@ -34,6 +34,22 @@ def user_list():
 
     return render_template("user_list.html", users=users)
 
+@app.route('/user', methods=["GET"])
+def show_user():
+    """ Display user info"""
+
+    user = request.args.get('user')
+
+    u = User.query.options(db.joinedload('ratings')).filter(User.user_id == user)
+    u = u[0]
+    user_age = u.age
+    user_zipcode = u.zipcode
+    user_ratings = u.ratings
+
+    return render_template('user_info.html', user_id=user, user_age=user_age,
+        user_zipcode=user_zipcode, user_ratings=user_ratings)
+
+
 @app.route('/register', methods=["GET"])
 def register_form():
     """ renders registration form """
@@ -85,7 +101,7 @@ def login_process():
         session['user_id'] = q.user_id
         flash("You are logged in!")
         print "login success"
-        return redirect('/')
+        return redirect('/user?user={}'.format(q.user_id))
 
     else:
         flash("Login failed, please try again")
