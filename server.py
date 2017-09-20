@@ -8,6 +8,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from model import connect_to_db, db, User, Rating, Movie
 
+from datetime import date
+
 
 app = Flask(__name__)
 
@@ -48,6 +50,28 @@ def show_user():
 
     return render_template('user_info.html', user_id=user, user_age=user_age,
         user_zipcode=user_zipcode, user_ratings=user_ratings)
+
+@app.route('/movies')
+def movie_list():
+    """ show list of movies"""
+
+    movies = Movie.query.order_by('title').all()
+
+    return render_template('movie_list.html', movies=movies)
+
+@app.route('/movie', methods=["GET"])
+def show_movie():
+    """ show details about a movie, given movie_id"""
+
+    movie_id = request.args.get('movie')
+
+    m = Movie.query.options(db.joinedload('ratings')).filter(Movie.movie_id == movie_id)
+
+    m = m[0]
+    ratings = m.ratings
+    released_at = m.released_at.date()
+
+    return render_template('movie_info.html', movie=m, ratings=ratings, released_at=released_at)
 
 
 @app.route('/register', methods=["GET"])

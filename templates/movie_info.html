@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>Movie Info</h2>
+
+
+    <ul>
+      <li> Movie Name: {{ movie.title }} </li>
+      <li> Released at: {{ released_at }} </li>
+      <li> <a href="{{ movie.imdb_url }}"> IMDB Link</a></li>
+
+    </ul>
+    <h3>Have you seen this movie? Add your rating!</h3>
+    <form action='/process_rating' method="POST">
+      <select name='rating'>
+        <option value='1'>1</option>
+        <option value='2'>2</option>
+        <option value='3'>3</option>
+        <option value='4'>4</option>
+        <option value='5'>5</option>
+        <input type='submit' value='Submit'>
+    </form>
+
+    <h3> Movie Ratings: </h3>
+    <ul>
+      {% for rating in ratings %}
+          <li>
+                {{ rating.score }}<br>
+          </li>
+      {% endfor %}
+    </ul>
+
+{% endblock %}
