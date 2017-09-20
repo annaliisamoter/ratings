@@ -49,24 +49,62 @@ def register_process():
 
     # check if user is already in database, via email
 
-    user_emails = db.session.query(User.email).all()
+    q = db.session.query(User).filter(User.email == email).all()
 
-    if email in user_emails:
-        error_message = "this user already exists"
-        return redirect("/register", message=error_message)
+    if q:
+        print "user already exists"
+        flash("User already exists")
+        return redirect('/login')
+
     else:
-        #do we need to call the set_val_user_id()???
         new_user = User(email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
+        print "new user has been added to the database"
+        flash("Welcome!")
+        return redirect("/")
 
-    return redirect("/")
 
+@app.route('/login', methods=["GET"])
+def login_display():
+    """ return login page """
+
+    return render_template('login.html')
+
+
+@app.route('/login', methods=["POST"])
+def login_process():
+    """ validate email & pass & stores in session """
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    q = db.session.query(User).filter(User.email == email).first()
+
+    if q and q.password == password:
+        print q, q.password
+        session['user_id'] = q.user_id
+        flash("You are logged in!")
+        print "login success"
+        return redirect('/')
+
+    else:
+        flash("Login failed, please try again")
+        print "login failed"
+        return redirect('/login')
+
+
+@app.route('/logout')
+def logout_process():
+    """logs user out of session"""
+
+    session['user_id'] = None
+    flash("You've been logged out.  Goodbye!")
+    return redirect('/')
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
     # point that we invoke the DebugToolbarExtension
-    app.debug = True
+    app.debug = False
     app.jinja_env.auto_reload = app.debug  # make sure templates, etc. are not cached in debug mode
 
     connect_to_db(app)
