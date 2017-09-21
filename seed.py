@@ -51,7 +51,7 @@ def load_movies():
         imdb_url = split_row[4]
 
         if released_at:
-            released_at = datetime.strptime(released_at, "%d-%b-%Y")
+            released_at = datetime.strptime(released_at, "%d-%b-%Y").date()
         else:
             released_at = None
 
@@ -65,7 +65,6 @@ def load_movies():
     db.session.commit()
 
 
-
 def load_ratings():
     """Load ratings from u.data into database."""
 
@@ -77,8 +76,8 @@ def load_ratings():
         row = row.rstrip()
         split_row = row.split("\t")
 
-        movie_id = split_row[0]
-        user_id = split_row[1]
+        user_id = split_row[0]
+        movie_id = split_row[1]
         score = split_row[2]
 
         rating = Rating(movie_id=movie_id, user_id=user_id, score=score)

@@ -74,11 +74,37 @@ def show_movie():
     return render_template('movie_info.html', movie=m, ratings=ratings, released_at=released_at)
 
 
+@app.route('/process-rating', methods=['POST'])
+def process_rating():
+    """Add or update rating to movie"""
+    score = request.form.get('rating')
+    movie_id = request.form.get('movie_id')
+
+    user_id = session['user_id']
+
+    q = Rating.query.filter(Rating.user_id == user_id, Rating.movie_id == movie_id).first()
+
+    if q:
+        q.score = score
+        db.session.add(q)
+        print "updated score to", score
+
+    else:
+        rating = Rating(movie_id=movie_id, user_id=user_id, score=score)
+        db.session.add(rating)
+        print "Created a new rating for ", movie_id
+
+    db.session.commit()
+
+    return redirect('/movie?movie={}'.format(movie_id))
+
+
 @app.route('/register', methods=["GET"])
 def register_form():
     """ renders registration form """
 
     return render_template("register_form.html")
+
 
 @app.route('/register', methods=["POST"])
 def register_process():
@@ -123,6 +149,7 @@ def login_process():
     if q and q.password == password:
         print q, q.password
         session['user_id'] = q.user_id
+        session['logged_in'] = True
         flash("You are logged in!")
         print "login success"
         return redirect('/user?user={}'.format(q.user_id))
@@ -138,6 +165,7 @@ def logout_process():
     """logs user out of session"""
 
     session['user_id'] = None
+    session['logged_in'] = False
     flash("You've been logged out.  Goodbye!")
     return redirect('/')
 
