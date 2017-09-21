@@ -10,6 +10,11 @@
       <li> <a href="{{ movie.imdb_url }}"> IMDB Link</a></li>
     </ul>
 
+    <p>Average Rating: {{ '%0.1f' % average }}</p?>
+    {% if prediction %}
+    <p>We predict you will rate this movie {{ prediction|round|int }}. </p>
+    {% endif %}
+
     {% if 'user_id' in session %}
     <div>
 

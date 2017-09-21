@@ -64,6 +64,25 @@ def show_movie():
     """ show details about a movie, given movie_id"""
 
     movie_id = request.args.get('movie')
+    user_id = session.get("user_id")
+    movie = Movie.query.get(movie_id)
+
+    if user_id:
+        user_rating = Rating.query.filter_by(
+            movie_id=movie_id, user_id=user_id).first()
+
+    else:
+        user_rating = None
+
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = float(sum(rating_scores)) / len(rating_scores)
+
+    prediction = None
+
+    if (not user_rating) and user_id:
+        user = User.query.get(user_id)
+        if user:
+            prediction = user.predict_rating(movie)
 
     m = Movie.query.options(db.joinedload('ratings')).filter(Movie.movie_id == movie_id)
 
@@ -71,7 +90,10 @@ def show_movie():
     ratings = m.ratings
     released_at = m.released_at.date()
 
-    return render_template('movie_info.html', movie=m, ratings=ratings, released_at=released_at)
+    return render_template('movie_info.html', movie=m,
+     ratings=ratings, released_at=released_at, user_rating=user_rating,
+     average=avg_rating, prediction=prediction
+     )
 
 
 @app.route('/process-rating', methods=['POST'])
